@@ -1,5 +1,4 @@
 ﻿using TransactionsAPI.Application.Common.Interfaces;
-using TransactionsAPI.Infrastructure.Files;
 using TransactionsAPI.Infrastructure.Identity;
 using TransactionsAPI.Infrastructure.Persistence;
 using TransactionsAPI.Infrastructure.Persistence.Interceptors;
@@ -43,7 +42,6 @@ public static class ConfigureServices
 
         services.AddTransient<IDateTime, DateTimeService>();
         services.AddTransient<IIdentityService, IdentityService>();
-        services.AddTransient<ICsvFileBuilder, CsvFileBuilder>();
 
         services.AddAuthentication()
             .AddIdentityServerJwt();
