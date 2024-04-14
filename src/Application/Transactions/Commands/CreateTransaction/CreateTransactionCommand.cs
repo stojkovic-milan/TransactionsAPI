@@ -10,6 +10,7 @@ public record CreateTransactionCommand : IRequest<Guid>
     public User User { get; set; }
     public decimal Amount { get; set; }
     public string Currency { get; set; } = string.Empty;
+    public string? TransactionHash { get; set; }
 }
 
 public class CreateTransactionCommandHandler : IRequestHandler<CreateTransactionCommand, Guid>
@@ -23,6 +24,7 @@ public class CreateTransactionCommandHandler : IRequestHandler<CreateTransaction
 
     public async Task<Guid> Handle(CreateTransactionCommand request, CancellationToken cancellationToken)
     {
+
         var entity = new Transaction();
 
         entity.ExternalTransactionId = request.ExternalTransactionId;

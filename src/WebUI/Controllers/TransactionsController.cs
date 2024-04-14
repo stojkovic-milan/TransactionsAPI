@@ -1,20 +1,24 @@
 ﻿using TransactionsAPI.Application.Transactions.Commands.CreateTransaction;
-using TransactionsAPI.Application.TodoLists.Commands.DeleteTodoList;
-using TransactionsAPI.Application.TodoLists.Commands.UpdateTodoList;
-using TransactionsAPI.Application.TodoLists.Queries.ExportTodos;
-using TransactionsAPI.Application.TodoLists.Queries.GetTodos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TransactionsAPI.Application.Common.Interfaces;
 
 namespace TransactionsAPI.WebUI.Controllers;
 
-[Authorize]
 public class TransactionsController : ApiControllerBase
 {
+    IHeaderPropertyAccessService _headerPropertyAccessService;
+
+
+    public TransactionsController(IHeaderPropertyAccessService headerPropertyAccessService)
+    {
+        _headerPropertyAccessService = headerPropertyAccessService;
+    }
 
     [HttpPost]
     public async Task<ActionResult<Guid>> Create(CreateTransactionCommand command)
     {
+        command.TransactionHash = _headerPropertyAccessService.GetPropertyValue("hash");
         return await Mediator.Send(command);
     }
 }

@@ -16,6 +16,7 @@ public static class ConfigureServices
         services.AddDatabaseDeveloperPageExceptionFilter();
 
         services.AddSingleton<ICurrentUserService, CurrentUserService>();
+        services.AddSingleton<IHeaderPropertyAccessService, HeaderPropertyAccessService>();
 
         services.AddHttpContextAccessor();
 
