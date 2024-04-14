@@ -2,5 +2,5 @@
 
 public interface IHashKeyAccessService
 {
-    string? GetHashKey(string propertyName);
+    string SecretKey { get; }
 }
