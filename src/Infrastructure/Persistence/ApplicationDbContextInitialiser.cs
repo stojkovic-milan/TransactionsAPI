@@ -54,11 +54,13 @@ public class ApplicationDbContextInitialiser
     public async Task TrySeedAsync()
     {
         // Default users
-        _context.Users.Add(new User()
-        {
-            Balance = 100, Email = "milanstojkovic2707@gmail.com", Name = "Milan Stojkovic", Id = Guid.NewGuid()
-        });
+        var newUser = new ApplicationUser { UserName = "TestUser", Email = "mail@gmail.com", Balance = 0, Id = Guid.NewGuid().ToString() };
 
-        await _context.SaveChangesAsync();
+        if (_userManager.Users.All(u => u.UserName != newUser.UserName))
+        {
+            await _userManager.CreateAsync(newUser, "Password1!");
+            await _context.SaveChangesAsync();
+        }
+
     }
 }
