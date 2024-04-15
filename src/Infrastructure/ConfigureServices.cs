@@ -42,6 +42,8 @@ public static class ConfigureServices
 
         services.AddTransient<IDateTime, DateTimeService>();
         services.AddTransient<IIdentityService, IdentityService>();
+        services.AddTransient<IHashKeyAccessService, HashKeyAccessService>();
+        services.AddTransient<IUserBalanceService, UserBalanceService>();
 
         services.AddAuthentication()
             .AddIdentityServerJwt();

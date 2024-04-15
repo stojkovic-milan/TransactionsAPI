@@ -7,7 +7,7 @@ namespace TransactionsAPI.WebUI.Controllers;
 
 public class TransactionsController : ApiControllerBase
 {
-    IHeaderPropertyAccessService _headerPropertyAccessService;
+    private readonly IHeaderPropertyAccessService _headerPropertyAccessService;
 
 
     public TransactionsController(IHeaderPropertyAccessService headerPropertyAccessService)
@@ -16,7 +16,7 @@ public class TransactionsController : ApiControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Guid>> Create(CreateTransactionCommand command)
+    public async Task<ActionResult<string>> Create(CreateTransactionCommand command)
     {
         command.TransactionHash = _headerPropertyAccessService.GetPropertyValue("hash");
         return await Mediator.Send(command);

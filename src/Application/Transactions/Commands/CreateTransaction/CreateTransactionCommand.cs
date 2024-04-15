@@ -4,11 +4,12 @@ using TransactionsAPI.Domain.Entities;
 using MediatR;
 using System.Text;
 using AutoMapper.QueryableExtensions;
+using CleanTemplate.Domain.Events;
 using TransactionsAPI.Application.Common.Exceptions;
 
 namespace TransactionsAPI.Application.Transactions.Commands.CreateTransaction;
 
-public record CreateTransactionCommand : IRequest<Guid>
+public record CreateTransactionCommand : IRequest<string>
 {
     public string ExternalTransactionId { get; init; } = String.Empty;
     public string UserId { get; set; } = String.Empty;
@@ -17,21 +18,23 @@ public record CreateTransactionCommand : IRequest<Guid>
     public string? TransactionHash { get; set; }
 }
 
-public class CreateTransactionCommandHandler : IRequestHandler<CreateTransactionCommand, Guid>
+public class CreateTransactionCommandHandler : IRequestHandler<CreateTransactionCommand, string>
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly IHashKeyAccessService _hashKeyAccessService;
 
-    public CreateTransactionCommandHandler(IApplicationDbContext context, IIdentityService identityService, IHashKeyAccessService hashKeyAccessService)
+    public CreateTransactionCommandHandler(IApplicationDbContext context, IIdentityService identityService,
+        IHashKeyAccessService hashKeyAccessService)
     {
         _context = context;
         _identityService = identityService;
         _hashKeyAccessService = hashKeyAccessService;
     }
 
-    public async Task<Guid> Handle(CreateTransactionCommand request, CancellationToken cancellationToken)
+    public async Task<string> Handle(CreateTransactionCommand request, CancellationToken cancellationToken)
     {
+        
         var entity = new Transaction();
         string secretKey = _hashKeyAccessService.SecretKey;
 
@@ -53,11 +56,12 @@ public class CreateTransactionCommandHandler : IRequestHandler<CreateTransaction
             throw new InvalidHashException();
 
         entity.ExternalTransactionId = request.ExternalTransactionId;
-        //TODO: Fetch user by id using IdentityService
-        entity.User = _context.Users.FirstOrDefault(u => u.Id.ToString() == request.UserId);
+        entity.UserId = request.UserId;
         entity.Amount = request.Amount;
         entity.Currency = request.Currency;
-        entity.Id = Guid.NewGuid();
+        entity.Id = Guid.NewGuid().ToString();
+
+        entity.AddDomainEvent(new TransactionCreatedEvent(entity));
 
         _context.Transactions.Add(entity);
 

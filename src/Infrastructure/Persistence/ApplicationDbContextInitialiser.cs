@@ -59,7 +59,6 @@ public class ApplicationDbContextInitialiser
         if (_userManager.Users.All(u => u.UserName != newUser.UserName))
         {
             await _userManager.CreateAsync(newUser, "Password1!");
-            await _context.SaveChangesAsync();
         }
 
     }

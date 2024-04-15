@@ -10,10 +10,12 @@ namespace TransactionsAPI.Application.Transactions.Commands.CreateTransaction;
 public class CreateTransactionCommandValidator : AbstractValidator<CreateTransactionCommand>
 {
     private readonly IApplicationDbContext _context;
+    private readonly IIdentityService _identityService;
 
-    public CreateTransactionCommandValidator(IApplicationDbContext context)
+    public CreateTransactionCommandValidator(IApplicationDbContext context, IIdentityService identityService)
     {
         _context = context;
+        _identityService = identityService;
 
         RuleFor(v => v.ExternalTransactionId)
             .NotEmpty().WithMessage("ExternalTransactionId is required.")
@@ -24,9 +26,10 @@ public class CreateTransactionCommandValidator : AbstractValidator<CreateTransac
 
         RuleFor(v => v.Currency)
             .NotEmpty().WithMessage("Currency is required.");
+
         RuleFor(v => v.UserId)
-            .NotEmpty().WithMessage("Transaction hash is required.")
             .MustAsync(BeValidUserId).WithMessage("User with provided id not found.");
+
         RuleFor(v => v.TransactionHash)
             .NotEmpty().WithMessage("Transaction hash is required.");
     }
@@ -39,7 +42,6 @@ public class CreateTransactionCommandValidator : AbstractValidator<CreateTransac
 
     public async Task<bool> BeValidUserId(string userId, CancellationToken cancellationToken)
     {
-        return await _context.Users.AnyAsync(u => u.Id.ToString() == userId,
-            cancellationToken: cancellationToken);
+        return await _identityService.UserWithIdExistsAsync(userId);
     }
 }
