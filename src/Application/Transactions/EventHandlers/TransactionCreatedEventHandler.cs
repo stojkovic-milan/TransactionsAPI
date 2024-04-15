@@ -9,7 +9,9 @@ public class TransactionCreatedEventHandler : INotificationHandler<TransactionCr
 {
     private readonly ILogger<TransactionCreatedEventHandler> _logger;
     private readonly IUserBalanceService _userBalanceService;
-    public TransactionCreatedEventHandler(ILogger<TransactionCreatedEventHandler> logger, IApplicationDbContext context, IIdentityService identityService, IUserBalanceService userBalanceService)
+
+    public TransactionCreatedEventHandler(ILogger<TransactionCreatedEventHandler> logger, IApplicationDbContext context,
+        IIdentityService identityService, IUserBalanceService userBalanceService)
     {
         _logger = logger;
         _userBalanceService = userBalanceService;
@@ -18,7 +20,12 @@ public class TransactionCreatedEventHandler : INotificationHandler<TransactionCr
     public Task Handle(TransactionCreatedEvent notification, CancellationToken cancellationToken)
     {
         _userBalanceService.AdjustUserBalance(notification.Item.UserId, notification.Item.Amount);
-        _logger.LogInformation("CleanTemplate Domain Event: {DomainEvent}", notification.GetType().Name);
+        _logger.LogCritical(
+            $"Recieved transaction:\n" +
+            $" ExternalId={notification.Item.ExternalTransactionId}\n" +
+            $" UserId={notification.Item.UserId}\n" +
+            $" Currency={notification.Item.Currency}\n" +
+            $" Amount={notification.Item.Amount}");
         return Task.CompletedTask;
     }
 }

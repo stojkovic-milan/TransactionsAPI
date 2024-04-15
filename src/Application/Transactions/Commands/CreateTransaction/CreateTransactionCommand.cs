@@ -6,10 +6,12 @@ using System.Text;
 using AutoMapper.QueryableExtensions;
 using CleanTemplate.Domain.Events;
 using TransactionsAPI.Application.Common.Exceptions;
+using Microsoft.Extensions.Logging;
+using TransactionsAPI.Application.Transactions.EventHandlers;
 
 namespace TransactionsAPI.Application.Transactions.Commands.CreateTransaction;
 
-public record CreateTransactionCommand : IRequest<string>
+public record CreateTransactionCommand : IRequest<CreateTransactionCommandResponse>
 {
     public string ExternalTransactionId { get; init; } = String.Empty;
     public string UserId { get; set; } = String.Empty;
@@ -18,23 +20,24 @@ public record CreateTransactionCommand : IRequest<string>
     public string? TransactionHash { get; set; }
 }
 
-public class CreateTransactionCommandHandler : IRequestHandler<CreateTransactionCommand, string>
+public class
+    CreateTransactionCommandHandler : IRequestHandler<CreateTransactionCommand, CreateTransactionCommandResponse>
 {
     private readonly IApplicationDbContext _context;
-    private readonly IIdentityService _identityService;
     private readonly IHashKeyAccessService _hashKeyAccessService;
+    private readonly ILogger<CreateTransactionCommandHandler> _logger;
 
-    public CreateTransactionCommandHandler(IApplicationDbContext context, IIdentityService identityService,
-        IHashKeyAccessService hashKeyAccessService)
+    public CreateTransactionCommandHandler(IApplicationDbContext context,
+        IHashKeyAccessService hashKeyAccessService, ILogger<CreateTransactionCommandHandler> logger)
     {
         _context = context;
-        _identityService = identityService;
         _hashKeyAccessService = hashKeyAccessService;
+        _logger = logger;
     }
 
-    public async Task<string> Handle(CreateTransactionCommand request, CancellationToken cancellationToken)
+    public async Task<CreateTransactionCommandResponse> Handle(CreateTransactionCommand request,
+        CancellationToken cancellationToken)
     {
-        
         var entity = new Transaction();
         string secretKey = _hashKeyAccessService.SecretKey;
 
@@ -67,6 +70,17 @@ public class CreateTransactionCommandHandler : IRequestHandler<CreateTransaction
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return entity.Id;
+        var retVal = new CreateTransactionCommandResponse()
+        {
+            TransactionId = entity.Id, Message = "Success", Status = 0
+        };
+
+        _logger.LogCritical(
+            $"Transaction successful:\n" +
+            $" TransactionId={retVal.TransactionId}\n" +
+            $" Message={retVal.Message}\n" +
+            $" Status={retVal.Status}");
+
+        return retVal;
     }
 }

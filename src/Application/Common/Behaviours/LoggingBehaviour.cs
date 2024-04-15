@@ -1,6 +1,7 @@
 ﻿using TransactionsAPI.Application.Common.Interfaces;
 using MediatR.Pipeline;
 using Microsoft.Extensions.Logging;
+using TransactionsAPI.Application.Transactions.Commands.CreateTransaction;
 
 namespace TransactionsAPI.Application.Common.Behaviours;
 
@@ -26,6 +27,18 @@ public class LoggingBehaviour<TRequest> : IRequestPreProcessor<TRequest> where T
         if (!string.IsNullOrEmpty(userId))
         {
             userName = await _identityService.GetUserNameAsync(userId);
+        }
+
+        if (requestName == "CreateTransactionCommand")
+        {
+            CreateTransactionCommand cmd = request as CreateTransactionCommand;
+
+            _logger.LogCritical(
+                $"Recieved transaction:\n" +
+                $" ExternalId={cmd.ExternalTransactionId}\n" +
+                $" UserId={cmd.UserId}\n" +
+                $" Currency={cmd.Currency}\n" +
+                $" Amount={cmd.Amount}");
         }
 
         _logger.LogInformation("TransactionsAPI Request: {Name} {@UserId} {@UserName} {@Request}",
